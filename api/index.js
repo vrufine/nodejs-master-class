@@ -1,6 +1,7 @@
 const http = require('http')
 const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
+const config = require('./config')
 
 const server = http.createServer((req, res) => {
   // obtém a URL parseada
@@ -57,20 +58,23 @@ const server = http.createServer((req, res) => {
   })
 })
 
-server.listen(3000, () => {
-  console.log('Server on 3000')
+server.listen(config.port, () => {
+  console.log(`Server on port ${config.port} in environment ${config.envName}...`)
 })
 
 // handlers
 const handlers = {}
 
 handlers.sample = (data, callback) => {
+  const payload = { name: 'Sample Handler' }
+  const statusCode = 406
   // devolver um status http e um payload
-  callback(406, { name: 'Sample Handler' })
+  callback(statusCode, payload)
 }
 
 handlers.notFound = (data, callback) => {
-  callback(404)
+  const statusCode = 404
+  callback(statusCode)
 }
 
 // criando um "request router"

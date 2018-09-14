@@ -27,18 +27,53 @@ const server = http.createServer((req, res) => {
   })
   req.on('end', () => {
     buffer += decoder.end()
-    res.end('Hello World!\n')
-    console.log(`
-    
-    trimmedPath         => ${trimmedPath}
-    queryStringObject   => ${JSON.stringify(queryStringObject)}
-    method              => ${method}
-    headers             => ${JSON.stringify(headers).substr(0, 90)}[...]
-    buffer              => ${buffer}
-    `)
+    // define qual handler deve ser utilizado
+    const chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound
+
+    // constrói os dados que serão passados para o handler escolhido
+    const data = {
+      trimmedPath,
+      method,
+      queryStringObject,
+      headers,
+      payload: buffer
+    }
+
+    chosenHandler(data, (statusCode, payload) => {
+      // statusCode padrão
+      statusCode = typeof (statusCode) === 'number' ? statusCode : 200
+
+      // payload padrão
+      payload = typeof (payload) === 'object' ? payload : {}
+
+      // stringify payload
+      const payloadString = JSON.stringify(payload)
+
+      // retorna a resposta
+      res.setHeader('Content-Type', 'application/json')
+      res.writeHead(statusCode)
+      res.end(payloadString)
+    })
   })
 })
 
 server.listen(3000, () => {
   console.log('Server on 3000')
 })
+
+// handlers
+const handlers = {}
+
+handlers.sample = (data, callback) => {
+  // devolver um status http e um payload
+  callback(406, { name: 'Sample Handler' })
+}
+
+handlers.notFound = (data, callback) => {
+  callback(404)
+}
+
+// criando um "request router"
+const router = {
+  sample: handlers.sample
+}

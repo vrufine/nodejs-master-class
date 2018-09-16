@@ -49,7 +49,6 @@ function unifiedServer (req, res) {
       headers,
       payload: buffer
     }
-    console.log('chegou!', data)
 
     chosenHandler(data, (statusCode, payload) => {
       statusCode = typeof (statusCode) === 'number' ? statusCode : 200
@@ -65,22 +64,18 @@ function unifiedServer (req, res) {
   })
 }
 
-// handlers
 const handlers = {}
-
-handlers.sample = (data, callback) => {
-  const payload = { name: 'Sample Handler' }
-  const statusCode = 406
-  // devolver um status http e um payload
-  callback(statusCode, payload)
-}
 
 handlers.notFound = (data, callback) => {
   const statusCode = 404
   callback(statusCode)
 }
 
-// criando um "request router"
+handlers.ping = (data, callback) => {
+  const statusCode = 200
+  callback(statusCode)
+}
+
 const router = {
-  sample: handlers.sample
+  ping: handlers.ping
 }

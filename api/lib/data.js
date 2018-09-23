@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
+const helpers = require('./helpers')
+
 const lib = {}
 
 lib.baseDir = path.join(__dirname, '..', '.data')
@@ -16,21 +18,20 @@ lib.create = function (dir, file, data, callback) {
           if (!err) {
             fs.close(fileDescriptor, err => {
               if (!err) {
-                /* eslint-disable */
-                callback(false)
+                callback(err)
               } else {
-                /* eslint-disable */
-                callback('Não foi possível fechar o arquivo.')
+                const errMsg = 'Error closing the file.'
+                callback(errMsg)
               }
             })
           } else {
-            /* eslint-disable */
-            callback('Não foi possível escrever dados no novo arquivo.')
+            const errMsg = 'Error writing the file.'
+            callback(errMsg)
           }
         })
       } else {
-        /* eslint-disable */
-        callback('Não foi possível abrir esse arquivo e/ou ele já existe.')
+        const errMsg = 'Error opening the file.'
+        callback(errMsg)
       }
     }
   )
@@ -41,7 +42,12 @@ lib.read = function (dir, file, callback) {
     path.join(lib.baseDir, dir, `${file}.json`),
     'utf-8',
     (err, data) => {
-      callback(err, data)
+      if (!err && data) {
+        const parsedData = helpers.parseJsonToObject(data)
+        callback(null, parsedData)
+      } else {
+        callback(err)
+      }
     }
   )
 }
@@ -59,21 +65,25 @@ lib.update = function (dir, file, data, callback) {
               if (!err) {
                 fs.close(fileDescriptor, err => {
                   if (!err) {
-                    callback(false)
+                    callback(err)
                   } else {
-                    callback('Erro ao fechar o arquivo: ', err)
+                    const errMsg = 'Error closing the file.'
+                    callback(errMsg)
                   }
                 })
               } else {
-                callback('Erro ao atualizar o arquivo', err)
+                const errMsg = 'Error writing the file.'
+                callback(errMsg)
               }
             })
           } else {
-            callback('Erro ao fazer truncate: ', err)
+            const errMsg = 'Error truncating the file.'
+            callback(errMsg)
           }
         })
       } else {
-        callback('Esse arquivo não existe', err)
+        const errMsg = 'Error opening the file.'
+        callback(errMsg)
       }
     }
   )
@@ -84,9 +94,10 @@ lib.delete = function (dir, file, callback) {
     path.join(lib.baseDir, dir, `${file}.json`),
     (err) => {
       if (!err) {
-        callback(false)
+        callback(err)
       } else {
-        callback('Erro ao remover o arquivo', err)
+        const errMsg = 'Error deleting the file.'
+        callback(errMsg)
       }
     }
   )
